@@ -19,15 +19,24 @@ func main() {
 	subdivisor := binding.NewFloat()
 	subdivisor.Set(1)
 
-	numtri := binding.NewFloat()
-	numtri.Set(1)
+	triType := "Red (1)"
 
 	var img image.Image
 	raster := canvas.NewRaster(func(w, h int) image.Image {
 		fmt.Println(w, h)
 		sub, _ := subdivisor.Get()
-		n, _ := numtri.Get()
-		triangles := generateTriangles(int(n), w, h)
+
+		var triangles []triangle
+		switch triType {
+		case "Red (1)":
+			triangles = []triangle{generateRedTriangle(w, h)}
+			fmt.Println(triangles)
+		case "Red (10)":
+			triangles = generateTriangleCircle(w, h)
+		case "Blue (1)":
+			triangles = []triangle{generateBlueTriangle(w, h)}
+		}
+
 		triangles = subdivide(int(sub), triangles)
 		img = drawTriangles(w, h, triangles)
 		return img
@@ -37,12 +46,14 @@ func main() {
 	subdivSlider := widget.NewSlider(1, 10)
 	subdivSlider.Bind(subdivisor)
 
-	numtriSlider := widget.NewSlider(1, 20)
-	numtriSlider.Bind(numtri)
+	triTypeSelect := widget.NewSelect([]string{"Red (1)", "Red (10)", "Blue (1)"}, func(s string) {
+		triType = s
+		raster.Refresh()
+	})
 
 	bottom := container.NewAdaptiveGrid(3,
 		newWithLabel(subdivSlider, "Subdivcount"),
-		newWithLabel(numtriSlider, "Trianglecount"),
+		newWithLabel(triTypeSelect, "Triangletype"),
 		widget.NewButton("draw", func() { raster.Refresh() }),
 	)
 

@@ -18,7 +18,7 @@ type triangle struct {
 	A, B, C vec
 }
 
-func generateTriangles(w, h int) []triangle {
+func generateTriangleCircle(w, h int) []triangle {
 	triangles := make([]triangle, 0)
 
 	for i := 0; i < 10; i++ {
@@ -33,16 +33,52 @@ func generateTriangles(w, h int) []triangle {
 	for i, v := range triangles {
 		red := v.Red
 		r := float64(h / 2)
+		centerY := float64(0)
+		centerX := (float64(w) - r*2) / 2
 		if w < h {
 			r = float64(w / 2)
+			centerX = 0
+			centerY = (float64(h) - r*2) / 2
 		}
-		a := vec_add(vec_mul(v.A, vec{r, r}), vec{r, r})
-		b := vec_add(vec_mul(v.B, vec{r, r}), vec{r, r})
-		c := vec_add(vec_mul(v.C, vec{r, r}), vec{r, r})
+		a := vec_add(vec_mul(v.A, vec{r, r}), vec{r + centerX, r + centerY})
+		b := vec_add(vec_mul(v.B, vec{r, r}), vec{r + centerX, r + centerY})
+		c := vec_add(vec_mul(v.C, vec{r, r}), vec{r + centerX, r + centerY})
 		triangles[i] = triangle{Red: red, A: a, B: b, C: c}
 	}
 
 	return triangles
+}
+
+const rad72 = 72 * (math.Pi / 180)
+
+func generateRedTriangle(w, h int) triangle {
+	A := vec{float64(w / 2), 0}
+
+	hyp := float64(h) / math.Sin(rad72)
+	adjacent := hyp * math.Cos(rad72)
+	bottom := vec_add(A, vec{0, float64(h)})
+
+	B := vec_sub(bottom, vec{adjacent, 0})
+	C := vec_add(bottom, vec{adjacent, 0})
+
+	return triangle{Red: true, A: A, B: B, C: C}
+}
+
+const rad36 = 36 * (math.Pi / 180)
+
+func generateBlueTriangle(w, h int) triangle {
+
+	adjacent := float64(w / 2)
+	opp := math.Tan(rad36) * adjacent
+	center := (float64(h) - opp) / 4
+
+	A := vec{float64(w / 2), center}
+	bottom := vec_add(A, vec{0, opp + center})
+
+	B := vec_sub(bottom, vec{adjacent, 0})
+	C := vec_add(bottom, vec{adjacent, 0})
+
+	return triangle{Red: false, A: A, B: B, C: C}
 }
 
 var phi = vec{math.Phi, math.Phi}
