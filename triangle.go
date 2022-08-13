@@ -31,7 +31,6 @@ func generateTriangleCircle(w, h int) []triangle {
 	}
 
 	for i, v := range triangles {
-		red := v.Red
 		r := float64(h / 2)
 		centerY := float64(0)
 		centerX := (float64(w) - r*2) / 2
@@ -43,7 +42,7 @@ func generateTriangleCircle(w, h int) []triangle {
 		a := vec_add(vec_mul(v.A, vec{r, r}), vec{r + centerX, r + centerY})
 		b := vec_add(vec_mul(v.B, vec{r, r}), vec{r + centerX, r + centerY})
 		c := vec_add(vec_mul(v.C, vec{r, r}), vec{r + centerX, r + centerY})
-		triangles[i] = triangle{Red: red, A: a, B: b, C: c}
+		triangles[i] = triangle{Red: v.Red, A: a, B: b, C: c}
 	}
 
 	return triangles
@@ -51,7 +50,7 @@ func generateTriangleCircle(w, h int) []triangle {
 
 const rad72 = 72 * (math.Pi / 180)
 
-func generateRedTriangle(w, h int) triangle {
+func generateThinTriangle(w, h int) triangle {
 	A := vec{float64(w / 2), 0}
 
 	hyp := float64(h) / math.Sin(rad72)
@@ -66,8 +65,7 @@ func generateRedTriangle(w, h int) triangle {
 
 const rad36 = 36 * (math.Pi / 180)
 
-func generateBlueTriangle(w, h int) triangle {
-
+func generateThickTriangle(w, h int) triangle {
 	adjacent := float64(w / 2)
 	opp := math.Tan(rad36) * adjacent
 	center := (float64(h) - opp) / 4
@@ -83,7 +81,7 @@ func generateBlueTriangle(w, h int) triangle {
 
 var phi = vec{math.Phi, math.Phi}
 
-func subdivide(n int, tri []triangle) []triangle {
+func subdivideTriangles(n int, tri []triangle) []triangle {
 	triangles := make([]triangle, len(tri))
 	copy(triangles, tri)
 
@@ -108,8 +106,9 @@ func subdivide(n int, tri []triangle) []triangle {
 	return triangles
 }
 
-func drawTriangles(w, h int, triangles []triangle) image.Image {
+func drawTriangles(w, h int, triangles []triangle, zoom float64) image.Image {
 	dc := gg.NewContext(w, h)
+	dc.ScaleAbout(zoom, zoom, float64(w/2), float64(h/2))
 	for _, t := range triangles {
 		drawTriangle(t, dc)
 	}
@@ -119,11 +118,14 @@ func drawTriangles(w, h int, triangles []triangle) image.Image {
 	return dc.Image()
 }
 
+var thinColor = rgba(255, 0, 0, 255)
+var thickColor = rgba(0, 0, 255, 255)
+
 func drawTriangle(t triangle, dc *gg.Context) {
 	if t.Red {
-		dc.SetRGB255(255, 0, 0)
+		dc.SetColor(thinColor)
 	} else {
-		dc.SetRGB255(0, 0, 255)
+		dc.SetColor(thickColor)
 	}
 	dc.MoveTo(t.A.X, t.A.Y)
 	dc.LineTo(t.B.X, t.B.Y)
